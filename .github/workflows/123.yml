@@ -144,22 +144,17 @@ jobs:
         run: |
           git clone --depth 5 --branch fongmi "https://xinyi1984:${{ secrets.GITHUB_TOKEN }}@github.com/xinyi1984/TVBox-TV.git" fongmi-apk
           cd fongmi-apk
-          if [ "${{ matrix.branchName }}" == "release" ]; then
-            target_dir="apk/release"
-          else
-            versionName=$(grep "versionName" /home/runner/work/TVBoxOSC/TVBoxOSC/TVBoxOSC/media/app/build.gradle | awk -F '"' '{print $2}')
-            [[ $versionName =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] && target_dir="apk/release" || target_dir="apk/dev"
-          fi
-          mkdir -p $target_dir
-          rm -f $target_dir/*
-          cp -v /home/runner/work/TVBoxOSC/TVBoxOSC/TVBoxOSC/media/apk/* $target_dir/
+          target_dir="apk/fongmi"
+          mkdir -p "$target_dir"
+          rm -f "$target_dir"/*
+          cp -v /home/runner/work/TVBoxOSC/TVBoxOSC/TVBoxOSC/media/apk/* "$target_dir"/
           git config --local user.name "github-actions[bot]"
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add $target_dir/
-          git commit -m "更新apk build APKs ${{ env.tag }}"
+          git add "$target_dir"/
+          git commit -m "更新 fongmi 分支 apk build APKs ${{ env.tag }}"
           git push --force origin fongmi
           cd ..
-          rm -rf fongmi-apk
+    rm -rf fongmi-apk
 
       - name: Push to master
         if: ${{ env.commit }}
