@@ -22,12 +22,9 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - userName: xinyi1984
+          - userName: dlgt7
             repoName: TV
             branchName: fongmi
-          - userName: xinyi1984
-            repoName: TV
-            branchName: release
 
     steps:
       - name: Checkout
