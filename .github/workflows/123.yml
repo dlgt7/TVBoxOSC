@@ -49,26 +49,26 @@ jobs:
       - name: Checkout Source Code
         if: ${{ env.commit }}
         run: |
-          git clone https://github.com/androidx/media.git TVBox-TV
-          cd TVBox-TV
+          git clone https://github.com/androidx/media.git TVBoxOSC
+          cd TVBoxOSC
           git checkout release
           LATEST_RELEASE=$(curl -s https://api.github.com/repos/androidx/media/releases | jq -r '.[0].tag_name')
           if [[ -n "$LATEST_RELEASE" && "$LATEST_RELEASE" =~ ^[0-9]+\.[0-9]+\.[0-9]+-(rc|beta|alpha)[0-9]+$ ]]; then
               git checkout -b "release-$LATEST_RELEASE" "origin/release-$LATEST_RELEASE" 2>/dev/null || true
           fi
-          cd /home/runner/work/TVBox-TV/TVBox-TV
-          git clone $upStream TVBox-TV/media
-          cd TVBox-TV/media
+          cd /home/runner/work/TVBoxOSC/TVBoxOSC
+          git clone $upStream TVBoxOSC/media
+          cd TVBoxOSC/media
           git checkout ${{ env.commit }}
           export TZ='Asia/Shanghai'
           echo "tag=$(git log --date=format:'%Y%m%d-%H%M' --pretty=format:%cd ${{ env.commitS }} -1)" >> $GITHUB_ENV
 
       - name: Extra Modify
         if: ${{ env.commit }}
-        working-directory: TVBox-TV/media
+        working-directory: TVBoxOSC/media
         run: |
           echo '修改VersionName'
-          if [ "${{ matrix.userName }}" == "xinyi1984" ]; then
+          if [ "${{ matrix.userName }}" == "dlgt7" ]; then
             sed -i 's/\.concat(buildTime())/ +"${{ env.tag }}"/g' app/build.gradle
           else
             sed -i "/versionName/s#[0-9a-zA-Z_\.\'\"-]\+$#\'${{ env.tag }}\'#" app/build.gradle
@@ -82,7 +82,7 @@ jobs:
 
       - name: Compress Source Code
         if: ${{ env.commit }}
-        working-directory: TVBox-TV/media
+        working-directory: TVBoxOSC/media
         run: |
           rm -rf release
           zip -q -x ".git/*" -x ".github/*" -r source-${{ env.commitS }}.zip .
@@ -100,7 +100,7 @@ jobs:
 
       - name: Build With Gradle
         if: ${{ env.commit }}
-        working-directory: TVBox-TV/media
+        working-directory: TVBoxOSC/media
         run: |
           chmod +x ./gradlew
           rm -rf app/src/armeabi_v7a/assets
@@ -109,7 +109,7 @@ jobs:
 
       - name: Prepare App
         if: ${{ env.commit }}
-        working-directory: TVBox-TV/media
+        working-directory: TVBoxOSC/media
         run: |
           rm -rf apk/
           mkdir -p apk/
@@ -121,7 +121,7 @@ jobs:
 
       - name: Release Apk Sign
         if: ${{ env.commit }}
-        working-directory: TVBox-TV/media
+        working-directory: TVBoxOSC/media
         run: |
           signingConfigs='ICAgIHNpZ25pbmdDb25maWdzIHtcCiAgICAgICAgaWYgKHByb2plY3QuaGFzUHJvcGVydHkoIlJFTEVBU0VfU1RPUkVfRklMRSIpKSB7XAogICAgICAgICAgICBteUNvbmZpZyB7XAogICAgICAgICAgICAgICAgc3RvcmVGaWxlIGZpbGUoUkVMRUFTRV9TVE9SRV9GSUxFKVwKICAgICAgICAgICAgICAgIHN0b3JlUGFzc3dvcmQgUkVMRUFTRV9TVE9SRV9QQVNTV09SRFwKICAgICAgICAgICAgICAgIGtleUFsaWFzIFJFTEVBU0VfS0VZX0FMSUFTXAogICAgICAgICAgICAgICAga2V5UGFzc3dvcmQgUkVMRUFTRV9LRVlfUEFTU1dPUkRcCiAgICAgICAgICAgICAgICB2MVNpZ25pbmdFbmFibGVkIHRydWVcCiAgICAgICAgICAgICAgICB2MlNpZ25pbmdFbmFibGVkIHRydWVcCiAgICAgICAgICAgICAgICBlbmFibGVWM1NpZ25pbmcgPSB0cnVlXAogICAgICAgICAgICAgICAgZW5hYmxlVjRTaWduaW5nID0gdHJ1ZVwKICAgICAgICAgICAgfVwKICAgICAgICB9XAogICAgfVwKXA=='
           signingConfig='ICAgICAgICAgICAgaWYgKHByb2plY3QuaGFzUHJvcGVydHkoIlJFTEVBU0VfU1RPUkVfRklMRSIpKSB7XAogICAgICAgICAgICAgICAgc2lnbmluZ0NvbmZpZyBzaWduaW5nQ29uZmlncy5teUNvbmZpZ1wKICAgICAgICAgICAgfVwK'
@@ -136,7 +136,7 @@ jobs:
 
       - name: Release Note
         if: ${{ env.commit }}
-        working-directory: TVBox-TV/media
+        working-directory: TVBoxOSC/media
         run: |
           lastCommit=$(grep "${{ matrix.userName }}\/${{ matrix.repoName }}\/tree\/${{ matrix.branchName }}" ${{ github.workspace }}/README.md | grep -o '[a-z0-9]\{40\}')
           echo -e "Credit: [${{ matrix.userName }}/${{ matrix.repoName }}/${{ matrix.branchName }}](${{ env.upStream }})\nCommit: ${{ env.commit }}\nChangelog:" > apk/${{ matrix.userName }}-Release.log
@@ -149,17 +149,17 @@ jobs:
       - name: Push APK to fongmi
         if: ${{ env.commit }}
         run: |
-          git clone --depth 5 --branch fongmi "https://xinyi1984:${{ secrets.GITHUB_TOKEN }}@github.com/xinyi1984/TVBox-TV.git" fongmi-apk
+          git clone --depth 5 --branch fongmi "https://dlgt7:${{ secrets.GITHUB_TOKEN }}@github.com/xinyi1984/TVBox-TV.git" fongmi-apk
           cd fongmi-apk
           if [ "${{ matrix.branchName }}" == "release" ]; then
             target_dir="apk/release"
           else
-            versionName=$(grep "versionName" /home/runner/work/TVBox-TV/TVBox-TV/TVBox-TV/media/app/build.gradle | awk -F '"' '{print $2}')
+            versionName=$(grep "versionName" /home/runner/work/TVBoxOSC/TVBoxOSC/TVBoxOSC/media/app/build.gradle | awk -F '"' '{print $2}')
             [[ $versionName =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] && target_dir="apk/release" || target_dir="apk/dev"
           fi
           mkdir -p $target_dir
           rm -f $target_dir/*
-          cp -v /home/runner/work/TVBox-TV/TVBox-TV/TVBox-TV/media/apk/* $target_dir/
+          cp -v /home/runner/work/TVBoxOSC/TVBoxOSC/TVBoxOSC/media/apk/* $target_dir/
           git config --local user.name "github-actions[bot]"
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add $target_dir/
@@ -172,7 +172,7 @@ jobs:
         if: ${{ env.commit }}
         run: |
           rm -rf *
-          rm -rf TVBox-TV
+          rm -rf TVBoxOSC
           git reset --hard
           sed -i '/url =/d' ./.git/config
           git config --local user.name "github-actions[bot]"
