@@ -57,7 +57,7 @@ jobs:
           if [[ -n "$LATEST_RELEASE" && "$LATEST_RELEASE" =~ ^[0-9]+\.[0-9]+\.[0-9]+-(rc|beta|alpha)[0-9]+$ ]]; then
               git checkout -b "release-$LATEST_RELEASE" "origin/release-$LATEST_RELEASE" 2>/dev/null || true
           fi
-          cd /home/runner/work/TVBox-TV/TVBox-TV
+          cd /home/runner/work/TVBoxOSC/TVBox-TV
           git clone $upStream TVBox-TV/media
           cd TVBox-TV/media
           git checkout ${{ env.commit }}
